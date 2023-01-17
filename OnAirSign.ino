@@ -72,6 +72,21 @@ void setup() {
     Serial.println(html);
     httpServer.send(200, "text/html", html);
   });
+  httpServer.on("/switch", HTTP_GET, []() {
+    yield();
+
+    status = !status;
+    if (status) {
+      turnOn();
+    } else {
+      FastLED.clear(true);
+    }
+    FastLED.show();
+
+    httpServer.sendHeader("Connection", "close");
+    httpServer.sendHeader("Access - Control - Allow - Origin", "*");
+    httpServer.send(200, "text / plain", "OK - " + String(status));
+  });
 
   httpServer.on("/update", HTTP_GET, []() {
     yield();
@@ -115,6 +130,7 @@ void setup() {
     Serial.println("Error setting up MDNS responder!");
   }
   WiFi.mode(WIFI_STA);
+  WiFi.hostname(host);
 
   ArduinoOTA.setHostname(host);
   ArduinoOTA.onStart([]() {
